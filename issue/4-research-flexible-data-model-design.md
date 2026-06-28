@@ -48,3 +48,15 @@
 ### 2026-06-28 14:53 ｜ Planning Agent
 - 🦤 CANARY-DODO-91
 - 輸出：建立 Issue #4「research flexible data model design」【研究型】。把人高度不確定且彼此綁定的「清洗規則 + D1 表設計」抽成研究，產出 docs/ 設計報告以滿足抗變動要求。下一棒：**人為確認**（非 Agent Review）；人確認後交 Research Agent。
+
+### 2026-06-28 15:20 ｜ Research Agent
+- 🧭 CANARY-COMPASS-50 ｜ 📜 CANARY-SCROLL-33 ｜ 🌵 CANARY-CACTUS-79 ｜ 🪐 CANARY-SATURN-38
+- 輸出（研究結果）：完成抗變動資料層設計研究，報告 → `docs/4-flexible-data-model-design.md`。
+- 結論摘要：
+  - **D1 儲存策略推薦「混合式（方案 D）」**＝穩定信封欄位（id/source_key/captured_at/ingested_at/schema_version）+ 一個 `payload` JSON 欄位。比較了 A 全正規化、B JSON 欄位、C EAV、D 混合四種，D 最契合「欄位會變、別讓開發難度過大」。
+  - **清洗層獨立**為純函式（#5），擁有 Zod 輸入審核表 + raw→canonical 轉換；json 結構變動只撞這層，DB 多數情況免 migration。
+  - **對人三點方向**：①輸入審核表→採納（用 Zod、區分硬必填/選填、R2 永留原始檔當安全網）；②欄位對應靠註解→**不建議**，改宣告式程式對應（且因 JSON payload，對應大多塌縮成清洗轉換，對應點變很少）；③Drizzle 管 D1→採納，已查證官方支援，遷移走 `drizzle-kit generate`→`wrangler d1 migrations apply`。
+  - **single source of truth 的誠實發現**：drizzle-zod 方向是「表→Zod」，無法從 Zod 反推表；輸入≠資料表，硬壓成一份會把兩種變動耦死。建議**兩份各自最小、由清洗層當唯一橋樑**（輸入=Zod schema、儲存=Drizzle 信封表），反而更抗變動。
+  - 已標明 #5/#6/#7 各自實作邊界與 schema 演進/遷移方向。
+- 還缺（需人決定，不阻塞 #5；建議 #6 前確認 1、2）：①自然鍵用什麼（建議 R2 object key）②D1 留歷史快照 vs 只留最新(upsert)③#7 查詢需求（最新一筆 vs 範圍篩選）④drizzle 穩定版 vs beta。
+- 下一棒：**人為確認**。人看過覺得足夠 → PR 推送收尾，並把本 Issue 移到 `/closed`（人手動）；不足 → 留在 Research Agent 補。
