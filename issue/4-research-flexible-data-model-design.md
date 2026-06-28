@@ -60,3 +60,16 @@
   - 已標明 #5/#6/#7 各自實作邊界與 schema 演進/遷移方向。
 - 還缺（需人決定，不阻塞 #5；建議 #6 前確認 1、2）：①自然鍵用什麼（建議 R2 object key）②D1 留歷史快照 vs 只留最新(upsert)③#7 查詢需求（最新一筆 vs 範圍篩選）④drizzle 穩定版 vs beta。
 - 下一棒：**人為確認**。人看過覺得足夠 → PR 推送收尾，並把本 Issue 移到 `/closed`（人手動）；不足 → 留在 Research Agent 補。
+
+### 2026-06-28 ｜ Research Agent（依人最終決定改版）
+- 🧭 CANARY-COMPASS-50 ｜ 📜 CANARY-SCROLL-33 ｜ 🌵 CANARY-CACTUS-79 ｜ 🪐 CANARY-SATURN-38
+- **【人最終決定／覆寫】**（人為確認後拍板，覆寫上一筆的「混合式 payload」建議）：
+  1. **D1 不採 JSON payload，改全正規化欄位（方案 A）**。理由：清洗層本就只洗出必要欄位才存，DB 一欄一欄存正式欄位即可。
+  2. **保留歷史**：每次上傳 **INSERT 一筆**（非 upsert 覆蓋），D1 要能查時間變化。
+  3. **查詢需求＝時間序列**：web 看 time-series，於 (device, captured_at) 建索引。
+  4. **自然鍵＝(device, captured_at)**：同時當唯一鍵 + 時間序列查詢索引 + R2/D1 重複防呆(idempotency)。
+  - 抗變動取捨：全正規化「新增欄位需 migration」由人接受；改由三支柱撐住 → ①R2 永久原始檔(可重清洗/backfill) ②Drizzle 管 schema/migration ③獨立清洗層 + Zod 審核表。
+- 輸出（Research Agent 改版）：已將 `docs/4-flexible-data-model-design.md` **改版**（非新建），主推方案 D→A。更新章節：第 0(結論)、3(四方案比較、最終選 A)、4(三方向評估)、5(資料流+正規化時間序列表結構+範例)、6(正規化 schema 演進/migration/backfill)、7(#5/#6/#7 邊界對齊新決定)、8(套件)、9(剩餘待決)、10(驗收對照)、附錄 B(改版紀錄)。
+- 最終建議結構摘要：D1 正規化時間序列表 = `id` / `device` / `captured_at` / `metric_*`(placeholder，實際 metric schema 未定) / `source_key`(R2 參照) / `ingested_at` / 可選 `schema_version`；**(device, captured_at) UNIQUE** + 時間序列索引；每筆 INSERT 保留歷史；衝突 DO NOTHING 防呆。Issue #4 五條驗收條件改版後仍全數滿足（見報告第 10 節）。
+- 還缺（需人再決定，不阻塞設計方向）：①第一版實際 metric 欄位清單（建議人給代表性 json 樣本）②drizzle 穩定版 vs beta ③device 來源(json 欄位/檔名/metadata) ④(device,captured_at) 衝突語意(建議 DO NOTHING)。
+- 下一棒：**人為確認**改版內容。足夠 → PR 推送收尾，把本 Issue 移到 `/closed`（人手動）；不足 → 留在 Research Agent 續補。
