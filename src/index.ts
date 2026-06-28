@@ -36,10 +36,7 @@ app.put('/upload/:id', auth, async (c) => {
       400,
     );
   }
-
-  // result.data 是「只含我們要的欄位」且型別正確的乾淨資料（多餘欄位已被剝除）
-  const data = result.data;
-
+  
   return c.json({ ok: true })
 })
 
