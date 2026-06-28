@@ -2,7 +2,15 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "net-dashboard-server",
   "main": "src/index.ts",
-  "compatibility_date": "2026-06-28"
+  "compatibility_date": "2026-06-28",
+
+  // Secrets（不寫在這裡，避免進 git）：
+  //   AUTH_TOKEN — 共享驗證 token，供 src/middleware/auth.ts 比對。
+  //   設定方式：
+  //     線上：echo "<token>" | npx wrangler secret put AUTH_TOKEN
+  //     本地：放在 .dev.vars（範本見 .dev.vars.example）
+  //   型別宣告：src/env.d.ts（合併進 CloudflareBindings）。
+
   // "compatibility_flags": [
   //   "nodejs_compat"
   // ],
@@ -31,8 +39,10 @@
   // "ai": {
   //   "binding": "AI"
   // },
-  // "observability": {
-  //   "enabled": true,
-  //   "head_sampling_rate": 1
-  // }
+  "observability": {
+    "logs": {
+      "enabled": true,
+      "invocation_logs": true
+    }
+  }
 }

@@ -1,0 +1,6 @@
+# 本地開發用的環境變數範本（複製成 .dev.vars 後填入真值）。
+# .dev.vars 已被 .gitignore 忽略，不會進 git。
+#
+# 線上（Cloudflare Workers）請改用 secret：
+#   echo "<your-token>" | npx wrangler secret put AUTH_TOKEN
+AUTH_TOKEN="replace-with-your-shared-token"
